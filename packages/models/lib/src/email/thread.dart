@@ -5,6 +5,7 @@
 import 'package:collection/collection.dart';
 import 'package:quiver/core.dart' as quiver;
 
+import 'attachment.dart';
 import 'message.dart';
 
 const ListEquality<Message> _messageListEquality =
@@ -63,4 +64,8 @@ class Thread {
         historyId,
         messages,
       ]);
+
+  /// Get all [Attachment]s in all messages of thread
+  Iterable<Attachment> get attachments =>
+      messages.expand((Message m) => m.attachments);
 }

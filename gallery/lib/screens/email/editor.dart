@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:models/email.dart';
 import 'package:widgets/email.dart';
+import 'package:widgets/youtube.dart';
 
 /// This screen displays an Google Inbox style email editor.
 class EmailEditorScreen extends StatefulWidget {

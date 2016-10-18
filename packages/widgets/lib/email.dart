@@ -4,6 +4,7 @@
 
 export 'src/email/archive_dismissable_background.dart';
 export 'src/email/editor_action_bar_header.dart';
+export 'src/email/fallback_attachment_preview.dart';
 export 'src/email/folder_list_item.dart';
 export 'src/email/inbox_menu.dart';
 export 'src/email/message_action_bar_footer.dart';

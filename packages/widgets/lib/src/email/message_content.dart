@@ -5,6 +5,11 @@
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:models/email.dart';
+import 'package:module_toolkit/embeddable_surface.dart';
+import 'package:module_toolkit/module_capability.dart';
+import 'package:module_toolkit/module_data.dart';
+
+import 'fallback_attachment_preview.dart';
 
 /// Renders the content of a [Message]
 // TODO(dayang) Render rich text
@@ -19,13 +24,8 @@ class MessageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      padding: const EdgeInsets.only(
-        left: 16.0,
-        right: 16.0,
-        bottom: 16.0,
-      ),
-      child: new Text(
+    List<Widget> children = <Widget>[
+      new Text(
         message.text,
         softWrap: true,
         style: new TextStyle(
@@ -33,6 +33,41 @@ class MessageContent extends StatelessWidget {
           color: Colors.black,
           height: 1.5,
         ),
+      ),
+    ];
+
+    message.attachments.forEach((Attachment attachment) {
+      children.add(new Container(
+        child: new EmbeddableSurface(
+          boxConstraints: new BoxConstraints(
+            maxWidth: 500.0,
+            maxHeight: 500.0,
+          ),
+          data: new ModuleData(
+            type: 'EmailAttachment',
+            payload: attachment,
+          ),
+          capabilities: <ModuleCapability>[
+            ModuleCapability.network,
+            ModuleCapability.click,
+            ModuleCapability.audio,
+            ModuleCapability.video,
+          ],
+          fallbackModule: new FallbackAttachmentPreview(
+            attachment: attachment,
+          ),
+        ),
+      ));
+    });
+
+    return new Container(
+      padding: const EdgeInsets.only(
+        left: 16.0,
+        right: 16.0,
+        bottom: 16.0,
+      ),
+      child: new Column(
+        children: children,
       ),
     );
   }
