@@ -1,0 +1,53 @@
+Flutter crash report; please file at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter upgrade
+
+## exception
+
+The null object does not have a getter 'length'.
+
+NoSuchMethodError: method not found: 'length'
+Receiver: null
+Arguments: []
+
+```
+dart:core                                                         Object.noSuchMethod
+package:flutter_tools/src/version.dart 97                         _shortGitRevision
+package:flutter_tools/src/version.dart 54                         FlutterVersion.engineRevisionShort
+package:flutter_tools/src/doctor.dart 206                         _FlutterValidator.validate
+package:flutter_tools/src/doctor.dart 106                         Doctor.diagnose
+package:flutter_tools/executable.dart 161                         _doctorText.<fn>
+package:flutter_tools/src/base/context.dart 75                    AppContext._run.<async>
+===== asynchronous gap ===========================
+dart:async                                                        _Completer.completeError
+package:flutter_tools/src/base/context.dart 80                    AppContext._run.<async>
+===== asynchronous gap ===========================
+dart:async                                                        Future.Future.microtask
+package:flutter_tools/src/base/context.dart                       AppContext._run
+package:flutter_tools/src/base/context.dart 66                    AppContext.runInZone.<fn>
+dart:async                                                        runZoned
+package:flutter_tools/src/base/context.dart 65                    AppContext.runInZone
+package:flutter_tools/executable.dart 161                         _doctorText
+package:flutter_tools/executable.dart 147                         _createCrashReport
+package:flutter_tools/executable.dart 119                         main.<async>.<fn>
+dart:async                                                        _Completer.completeError
+package:flutter_tools/executable.dart 90                          main.<async>.<fn>.<async>
+dart:async                                                        _Completer.completeError
+package:flutter_tools/src/runner/flutter_command_runner.dart 180  FlutterCommandRunner.runCommand.<async>
+dart:async                                                        _Completer.completeError
+package:flutter_tools/src/runner/flutter_command.dart 185         FlutterCommand._run.<async>
+dart:async                                                        _Completer.completeError
+package:flutter_tools/src/commands/upgrade.dart 76                UpgradeCommand.runInProject.<async>
+dart:async                                                        _SyncCompleter.complete
+package:flutter_tools/src/base/process.dart 77                    runCommandAndStreamOutput.<async>
+===== asynchronous gap ===========================
+package:stack_trace                                               Chain.capture
+package:flutter_tools/executable.dart 82                          main.<async>
+```
+
+## flutter doctor
+
+```
+```

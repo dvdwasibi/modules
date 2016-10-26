@@ -79,6 +79,9 @@ class PhoneEntryGroup extends StatelessWidget {
           onSelectPhoneEntry(entry);
         }
       },
+      onLongPress: () {
+        //TODO(expand the things)
+      },
       child: new Container(
         padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
         child: new Row(
@@ -119,6 +122,85 @@ class PhoneEntryGroup extends StatelessWidget {
           child: new Column(children: children),
         ),
       ],
+    );
+  }
+}
+
+class SinglePhoneEntry extends StatefulWidget{
+  PhoneEntry entry;
+  bool showPrimaryStar;
+  ThemeData theme;
+  VoidCallback onTap;
+
+  SinglePhoneEntry({
+    PhoneEntry entry,
+    bool showPrimaryStar: false,
+    ThemeData theme,
+    VoidCallback onTap,
+  });
+
+  @override
+  _SinglePhoneEntryState createState() => new _SinglePhoneEntryState();
+}
+
+class _SinglePhoneEntryState extends State<SinglePhoneEntry> {
+  bool _showSuggestions = false;
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> children = <Widget>[];
+
+    // Add label if it exists for given entry
+    // If not, just add an empty container for spacing
+    children.add(new Container(
+      width: 60.0,
+      margin: const EdgeInsets.only(right: 8.0),
+      child: new Text(
+        config.entry.label ?? '',
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
+        style: new TextStyle(
+          color: Colors.grey[500],
+          fontSize: 16.0,
+        ),
+      ),
+    ));
+
+    // Add actual phone number
+    children.add(new Flexible(
+      flex: 1,
+      child: new Text(
+        config.entry.number,
+        softWrap: false,
+        overflow: TextOverflow.ellipsis,
+        style: new TextStyle(
+          fontSize: 16.0,
+        ),
+      ),
+    ));
+
+    children.add(new Container(
+      width: 50.0,
+      height: 24.0,
+      child: config.showPrimaryStar
+          ? new Icon(
+              Icons.star,
+              color: config.theme.primaryColor,
+            )
+          : null,
+    ));
+
+    return new InkWell(
+      onTap: config.onTap,
+      onLongPress: () {
+        //TODO(expand the things)
+      },
+      child: new Container(
+        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+        child: new Row(
+          children: children,
+        ),
+      ),
     );
   }
 }

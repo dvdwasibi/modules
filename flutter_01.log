@@ -1,0 +1,60 @@
+Flutter crash report; please file at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter upgrade
+
+## exception
+
+The null object does not have a getter 'length'.
+
+NoSuchMethodError: method not found: 'length'
+Receiver: null
+Arguments: []
+
+```
+dart:core                                                         Object.noSuchMethod
+package:flutter_tools/src/version.dart 97                         _shortGitRevision
+package:flutter_tools/src/version.dart 54                         FlutterVersion.engineRevisionShort
+package:flutter_tools/src/version.dart 61                         FlutterVersion.toString
+package:flutter_tools/src/commands/upgrade.dart 62                UpgradeCommand.runInProject.<async>
+dart:async                                                        _SyncCompleter.complete
+package:flutter_tools/src/base/process.dart 77                    runCommandAndStreamOutput.<async>
+===== asynchronous gap ===========================
+dart:async                                                        _Completer.completeError
+package:flutter_tools/src/commands/upgrade.dart 76                UpgradeCommand.runInProject.<async>
+dart:async                                                        _SyncCompleter.complete
+package:flutter_tools/src/base/process.dart 77                    runCommandAndStreamOutput.<async>
+===== asynchronous gap ===========================
+dart:async                                                        _asyncThenWrapperHelper
+package:flutter_tools/src/commands/upgrade.dart                   UpgradeCommand.runInProject
+package:flutter_tools/src/runner/flutter_command.dart 181         FlutterCommand._run.<async>
+dart:async                                                        _SyncCompleter.complete
+package:flutter_tools/src/cache.dart 182                          Cache.updateAll.<async>
+===== asynchronous gap ===========================
+dart:async                                                        _asyncThenWrapperHelper
+package:flutter_tools/src/runner/flutter_command.dart             FlutterCommand._run
+package:flutter_tools/src/runner/flutter_command.dart 112         FlutterCommand.run
+package:args/command_runner.dart 176                              CommandRunner.runCommand.<fn>
+dart:async                                                        Future.Future.sync
+package:args/command_runner.dart 129                              CommandRunner.runCommand
+package:flutter_tools/src/runner/flutter_command_runner.dart 177  FlutterCommandRunner.runCommand.<async>
+dart:async                                                        _SyncCompleter.complete
+package:flutter_tools/src/cache.dart 69                           Cache.lock.<async>
+===== asynchronous gap ===========================
+dart:async                                                        _asyncThenWrapperHelper
+package:flutter_tools/src/runner/flutter_command_runner.dart      FlutterCommandRunner.runCommand
+package:args/command_runner.dart 103                              CommandRunner.run.<fn>
+dart:async                                                        Future.Future.sync
+package:args/command_runner.dart 103                              CommandRunner.run
+package:flutter_tools/src/runner/flutter_command_runner.dart 123  FlutterCommandRunner.run
+package:flutter_tools/executable.dart 88                          main.<async>.<fn>.<async>
+===== asynchronous gap ===========================
+package:stack_trace                                               Chain.capture
+package:flutter_tools/executable.dart 82                          main.<async>
+```
+
+## flutter doctor
+
+```
+```
