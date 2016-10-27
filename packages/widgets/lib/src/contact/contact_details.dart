@@ -284,7 +284,7 @@ class _ContactLayoutDelegate extends MultiChildLayoutDelegate {
     layoutChild(
       contentId,
       new BoxConstraints.tightFor(
-        height: size.height - _kHeaderHeight,
+        // height: size.height - _kHeaderHeight,
         width: size.width,
       ),
     );

@@ -26,77 +26,12 @@ class PhoneEntryGroup extends StatelessWidget {
     assert(contact != null);
   }
 
-  Widget _buildPhoneEntryRow({
-    PhoneEntry entry,
-    bool showPrimaryStar: false,
-    ThemeData theme,
-  }) {
-    List<Widget> children = <Widget>[];
-
-    // Add label if it exists for given entry
-    // If not, just add an empty container for spacing
-    children.add(new Container(
-      width: 60.0,
-      margin: const EdgeInsets.only(right: 8.0),
-      child: new Text(
-        entry.label ?? '',
-        softWrap: false,
-        overflow: TextOverflow.ellipsis,
-        style: new TextStyle(
-          color: Colors.grey[500],
-          fontSize: 16.0,
-        ),
-      ),
-    ));
-
-    // Add actual phone number
-    children.add(new Flexible(
-      flex: 1,
-      child: new Text(
-        entry.number,
-        softWrap: false,
-        overflow: TextOverflow.ellipsis,
-        style: new TextStyle(
-          fontSize: 16.0,
-        ),
-      ),
-    ));
-
-    children.add(new Container(
-      width: 50.0,
-      height: 24.0,
-      child: showPrimaryStar
-          ? new Icon(
-              Icons.star,
-              color: theme.primaryColor,
-            )
-          : null,
-    ));
-
-    return new InkWell(
-      onTap: () {
-        if (onSelectPhoneEntry != null) {
-          onSelectPhoneEntry(entry);
-        }
-      },
-      onLongPress: () {
-        //TODO(expand the things)
-      },
-      child: new Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        child: new Row(
-          children: children,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     List<Widget> children = <Widget>[];
     contact.phoneNumbers.forEach((PhoneEntry entry) {
-      children.add(_buildPhoneEntryRow(
+      children.add(new SinglePhoneEntry(
         entry: entry,
         showPrimaryStar: entry == contact.primaryPhoneNumber &&
             contact.phoneNumbers.length > 1,
@@ -133,10 +68,10 @@ class SinglePhoneEntry extends StatefulWidget{
   VoidCallback onTap;
 
   SinglePhoneEntry({
-    PhoneEntry entry,
-    bool showPrimaryStar: false,
-    ThemeData theme,
-    VoidCallback onTap,
+    this.entry,
+    this.showPrimaryStar: false,
+    this.theme,
+    this.onTap,
   });
 
   @override
@@ -190,16 +125,115 @@ class _SinglePhoneEntryState extends State<SinglePhoneEntry> {
           : null,
     ));
 
-    return new InkWell(
-      onTap: config.onTap,
-      onLongPress: () {
-        //TODO(expand the things)
-      },
-      child: new Container(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        child: new Row(
-          children: children,
+    Widget suggestions = new Container(
+      // TODO(dayang): Hacky, should not set size here
+      width: 300.0,
+      padding: const EdgeInsets.all(16.0),
+      child: new Column(
+        children: <Widget>[
+          new InlineSuggestion(
+            color: Colors.blue[400],
+            name: 'Call with Google Voice Dialer',
+            icon: Icons.phone_in_talk
+          ),
+          new InlineSuggestion(
+            color: Colors.green[400],
+            name: 'Text with Facebook Messenger',
+            icon: Icons.chat,
+          ),
+          new InlineSuggestion(
+            color: Colors.red[400],
+            name: 'Ping with YO',
+            icon: Icons.announcement,
+          )
+        ],
+      ),
+    );
+
+
+    return new Column(
+      children: <Widget>[
+        new InkWell(
+          onTap: config.onTap,
+          onLongPress: () {
+            setState(() {
+              _showSuggestions = !_showSuggestions;
+            });
+          },
+          child: new Container(
+            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+            child: new Row(
+              children: children,
+            ),
+          ),
         ),
+        new AnimatedCrossFade(
+          firstChild: new Container(height: 0.0),
+          secondChild: suggestions,
+          firstCurve: new Interval(0.0, 0.6, curve: Curves.fastOutSlowIn),
+          secondCurve: new Interval(0.4, 1.0, curve: Curves.fastOutSlowIn),
+          sizeCurve: Curves.fastOutSlowIn,
+          crossFadeState: _showSuggestions ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: new Duration(milliseconds: 200),
+        )
+      ],
+    );
+  }
+}
+
+
+class InlineSuggestion extends StatelessWidget {
+  String name;
+  Color color;
+  IconData icon;
+
+  InlineSuggestion({
+    this.name,
+    this.color,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return new Container(
+      height: 50.0,
+      margin: const EdgeInsets.symmetric(vertical: 4.0),
+      decoration: new BoxDecoration(
+        backgroundColor: Colors.white,
+        borderRadius: new BorderRadius.all(
+          new Radius.circular(6.0),
+        ),
+        border: new Border.all(
+          color: Colors.grey[300],
+          width: 1.0,
+        ),
+      ),
+      child: new Row(
+        children: <Widget>[
+          new Container(
+            width: 50.0,
+            height: 50.0,
+            decoration: new BoxDecoration(
+              backgroundColor: color,
+            ),
+            child: new Center(
+              child: new Icon(icon, color: Colors.white),
+            ),
+          ),
+          new Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            height: 50.0,
+            child: new Align(
+              alignment: FractionalOffset.centerLeft,
+              child: new Text(
+                name,
+                style: new TextStyle(
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
