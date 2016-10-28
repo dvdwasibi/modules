@@ -128,7 +128,7 @@ class _SinglePhoneEntryState extends State<SinglePhoneEntry> {
     Widget suggestions = new Container(
       // TODO(dayang): Hacky, should not set size here
       width: 300.0,
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: new Column(
         children: <Widget>[
           new InlineSuggestion(
