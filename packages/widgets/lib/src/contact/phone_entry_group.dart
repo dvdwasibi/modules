@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:models/contact.dart';
 
+import 'popup_suggestions.dart';
 import 'type_defs.dart';
 
 /// A widget representing a contact group of phone entries (phone numbers)
@@ -150,12 +151,12 @@ class _SinglePhoneEntryState extends State<SinglePhoneEntry> {
       ),
     );
 
-
     return new Column(
       children: <Widget>[
         new InkWell(
           onTap: config.onTap,
           onLongPress: () {
+            showMenu(context: context);
             setState(() {
               _showSuggestions = !_showSuggestions;
             });
