@@ -39,6 +39,7 @@ class _EditorMessageState extends State<EditorMessage> {
     super.initState();
     config.message.recipientList ??= <Mailbox>[];
     config.message.ccList ??= <Mailbox>[];
+    config.message.subject ??= '';
   }
 
   @override
