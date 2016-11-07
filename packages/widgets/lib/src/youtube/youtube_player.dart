@@ -10,17 +10,29 @@ import 'package:meta/meta.dart';
 import 'package:flutter/http.dart' as http;
 import 'package:models/youtube.dart';
 
+import 'youtube_video_header.dart';
+
 /// Duration between switching thumbnails to fake video playing effect
 final Duration _kSlideDuration = const Duration(milliseconds: 300);
 
 /// Duration after which the Play Overlay will autohide
 final Duration _kOverlayAutoHideDuration = const Duration(seconds: 1);
 
-final String _kApiBaseUrl = 'https://content.googleapis.com';
+final String _kApiBaseUrl = 'content.googleapis.com';
 
 final String _kApiRestOfUrl = '/youtube/v3/videos';
 
 final String _kApiQueryParts = 'contentDetails,snippet,statistics';
+
+/// Represents the state of data loading
+enum LoadingState {
+  /// Still fetching data
+  inProgress,
+  /// Data has completed loading
+  completed,
+  /// Data failed to load
+  failed,
+}
 
 /// [YoutubePlayer] is a [StatelessWidget]
 /// UI Widget that can "play" Youtube videos.
@@ -59,11 +71,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   /// Flag for whether the play-button overlay is showing on top of the video
   bool _showingPlayOverlay = true;
 
-  /// Flag for whether video data (name, viewcount...) is being retrieved
-  bool _loadingVideoData = true;
 
-  /// Flag for if the video data fails to load
-  bool _videoDataLoadFailure = false;
+  /// Loading State for video data (name, viewcount...)
+  LoadingState _videoDataLoadingState = LoadingState.inProgress;
 
   /// Track the current thumbnail that is being shown
   /// Youtube provides 4 thumbnails (0,1,2,3)
@@ -78,23 +88,26 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   void initState() {
     super.initState();
-    print('Call Me');
     // Load up Video Metadata
     _getVideoData().then((VideoData videoData) {
-      print(videoData);
-      if(videoData == null) {
+      if(mounted) {
+        if(videoData == null) {
+          setState(() {
+            _videoDataLoadingState = LoadingState.failed;
+          });
+        } else {
+          setState(() {
+            _videoDataLoadingState = LoadingState.completed;
+            _videoData = videoData;
+          });
+        }
+      }
+    }).catchError((dynamic stuff) {
+      if(mounted) {
         setState(() {
-          _loadingVideoData = false;
-          _videoDataLoadFailure = true;
-        });
-      } else {
-        setState(() {
-          _loadingVideoData = false;
-          _videoData = videoData;
+          _videoDataLoadingState = LoadingState.failed;
         });
       }
-    }).catchError((Error error) {
-      print(error);
     });
   }
 
@@ -208,6 +221,62 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     );
   }
 
+  Widget _buildPlayer() {
+    return new LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return new Container(
+          height: 250.0,
+          width: constraints.maxWidth,
+          child: new Stack(
+            children: <Widget>[
+              new InkWell(
+                onTap: _showPlayOverlay,
+                child: new Image.network(
+                  _currentThumbnailURL,
+                  gaplessPlayback: true,
+                  fit: ImageFit.cover,
+                  height: 250.0,
+                  width: constraints.maxWidth,
+                ),
+              ),
+              new Offstage(
+                offstage: !_showingPlayOverlay,
+                child: _buildControlOverlay(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHeader() {
+    Widget header;
+    switch (_videoDataLoadingState) {
+      case LoadingState.inProgress:
+        header = new Container(
+          height: 50.0,
+          child: new Center(
+            child: new CircularProgressIndicator(
+              value: null,
+              valueColor: new AlwaysStoppedAnimation<Color>(Colors.grey[300]),
+            ),
+          ),
+        );
+        break;
+      case LoadingState.completed:
+        header = new YoutubeVideoHeader(videoData: _videoData);
+        break;
+      case LoadingState.failed:
+        header = new Container(
+          height: 50.0,
+          child: new Text('Content Failed to Load'),
+        );
+        break;
+    }
+    return header;
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -216,27 +285,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return new Container(
-      width: 250.0,
-      height: 250.0,
-      child: new Stack(
-        children: <Widget>[
-          new InkWell(
-            onTap: _showPlayOverlay,
-            child: new Image.network(
-              _currentThumbnailURL,
-              gaplessPlayback: true,
-              fit: ImageFit.cover,
-              width: 250.0,
-              height: 250.0,
-            ),
-          ),
-          new Offstage(
-            offstage: !_showingPlayOverlay,
-            child: _buildControlOverlay(),
-          ),
-        ],
-      ),
+
+    return new Column(
+      children: <Widget>[
+        _buildPlayer(),
+        _buildHeader(),
+      ],
     );
   }
 }

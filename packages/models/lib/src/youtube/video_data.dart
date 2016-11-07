@@ -30,9 +30,8 @@ class VideoData {
   VideoData.fromJson(dynamic json) {
     title = json['snippet']['title'];
     description = json['snippet']['description'];
-    // TODO (dayang): Coerce to datetime format
-    publishedAt = json['snippet']['publishedAt'];
-    channelTitle = json['channelTitle'];
+    publishedAt =  DateTime.parse(json['snippet']['publishedAt']);
+    channelTitle = json['snippet']['channelTitle'];
     viewCount = int.parse(json['statistics']['viewCount']);
     likeCount = int.parse(json['statistics']['likeCount']);
     dislikeCount = int.parse(json['statistics']['dislikeCount']);
