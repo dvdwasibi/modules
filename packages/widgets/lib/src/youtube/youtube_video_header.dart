@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+import 'dart:convert' show JSON;
+
+import 'package:flutter/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
@@ -9,20 +13,101 @@ import 'package:models/youtube.dart';
 
 import '../user/alphatar.dart';
 
+final String _kApiBaseUrl = 'content.googleapis.com';
+
+final String _kApiRestOfUrl = '/youtube/v3/videos';
+
+final String _kApiQueryParts = 'contentDetails,snippet,statistics';
+
+/// Represents the state of data loading
+enum LoadingState {
+  /// Still fetching data
+  inProgress,
+  /// Data has completed loading
+  completed,
+  /// Data failed to load
+  failed,
+}
 
 /// UI Widget that loads and shows the basic information about a Youtube
 /// video such as: title, likes, channel title, description...
-class YoutubeVideoHeader extends StatelessWidget {
+class YoutubeVideoHeader extends StatefulWidget {
 
-  /// Data for given video
-  final VideoData videoData;
+  /// ID for given youtube video
+  final String videoId;
+
+
+  /// Youtube API key needed to access the Youtube Public APIs
+  final String apiKey;
 
   /// Constructor
   YoutubeVideoHeader({
     Key key,
-    @required this.videoData,
+    @required this.videoId,
+    @required this.apiKey,
   }) : super(key: key) {
-    assert(videoData != null);
+    assert(videoId != null);
+    assert(apiKey != null);
+  }
+
+  @override
+  _YoutubeVideoHeaderState createState() => new _YoutubeVideoHeaderState();
+}
+
+class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
+
+  /// Data for given video
+  VideoData _videoData;
+
+  /// Loading State for video data (name, viewcount...)
+  LoadingState _loadingState = LoadingState.inProgress;
+
+  Future<VideoData> _getVideoData() async {
+    Map<String, String> params = <String, String>{};
+    params['id'] = config.videoId;
+    params['key'] = config.apiKey;
+    params['part'] = _kApiQueryParts;
+
+    Uri uri = new Uri.https(_kApiBaseUrl, _kApiRestOfUrl, params);
+    http.Response response = await http.get(uri);
+    dynamic jsonData = JSON.decode(response.body);
+
+    if(response.statusCode != 200) {
+      return null;
+    }
+
+    if(jsonData['items'] is List<Map<String, dynamic>> && jsonData['items'].isNotEmpty) {
+      return new VideoData.fromJson(jsonData['items'][0]);
+    } else {
+      return null;
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Load up Video Metadata
+    _getVideoData().then((VideoData videoData) {
+      if(mounted) {
+        if(videoData == null) {
+          setState(() {
+            _loadingState = LoadingState.failed;
+          });
+        } else {
+          setState(() {
+            _loadingState = LoadingState.completed;
+            _videoData = videoData;
+          });
+        }
+      }
+    }).catchError((dynamic stuff) {
+      if(mounted) {
+        setState(() {
+          _loadingState = LoadingState.failed;
+        });
+      }
+    });
   }
 
   Widget _buildLikeCount() {
@@ -37,7 +122,7 @@ class YoutubeVideoHeader extends StatelessWidget {
           ),
         ),
         new Text(
-          new NumberFormat.compact().format(videoData.likeCount),
+          new NumberFormat.compact().format(_videoData.likeCount),
           style: new TextStyle(color: Colors.grey[500]),
         ),
         new Container(
@@ -51,7 +136,7 @@ class YoutubeVideoHeader extends StatelessWidget {
           ),
         ),
         new Text(
-          new NumberFormat.compact().format(videoData.dislikeCount),
+          new NumberFormat.compact().format(_videoData.dislikeCount),
           style: new TextStyle(color: Colors.grey[500]),
         ),
       ],
@@ -74,7 +159,7 @@ class YoutubeVideoHeader extends StatelessWidget {
         children: <Widget>[
           // Title
           new Text(
-            videoData.title,
+            _videoData.title,
             style: new TextStyle(
               fontSize: 18.0,
             ),
@@ -83,7 +168,7 @@ class YoutubeVideoHeader extends StatelessWidget {
           new Container(
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: new Text(
-              '${new NumberFormat.decimalPattern().format(videoData.viewCount)}'
+              '${new NumberFormat.decimalPattern().format(_videoData.viewCount)}'
               ' views',
               style: new TextStyle(
                 color: Colors.grey[500],
@@ -115,12 +200,12 @@ class YoutubeVideoHeader extends StatelessWidget {
             children: <Widget>[
               new Alphatar(
                 size: 40.0,
-                letter: videoData.channelTitle[0],
+                letter: _videoData.channelTitle[0],
               ),
               new Container(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: new Text(
-                  videoData.channelTitle,
+                  _videoData.channelTitle,
                 ),
               ),
             ],
@@ -154,12 +239,35 @@ class YoutubeVideoHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return new Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        _buildPrimaryHeader(),
-        _buildChannelHeader(),
-      ],
-    );
+    Widget header;
+    switch (_loadingState) {
+      case LoadingState.inProgress:
+        header = new Container(
+          height: 50.0,
+          child: new Center(
+            child: new CircularProgressIndicator(
+              value: null,
+              valueColor: new AlwaysStoppedAnimation<Color>(Colors.grey[300]),
+            ),
+          ),
+        );
+        break;
+      case LoadingState.completed:
+        header = new Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildPrimaryHeader(),
+            _buildChannelHeader(),
+          ],
+        );
+        break;
+      case LoadingState.failed:
+        header = new Container(
+          height: 50.0,
+          child: new Text('Content Failed to Load'),
+        );
+        break;
+    }
+    return header;
   }
 }

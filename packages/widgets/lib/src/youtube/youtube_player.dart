@@ -3,12 +3,9 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert' show JSON;
 
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
-import 'package:flutter/http.dart' as http;
-import 'package:models/youtube.dart';
 
 import 'youtube_video_header.dart';
 
@@ -17,22 +14,6 @@ final Duration _kSlideDuration = const Duration(milliseconds: 300);
 
 /// Duration after which the Play Overlay will autohide
 final Duration _kOverlayAutoHideDuration = const Duration(seconds: 1);
-
-final String _kApiBaseUrl = 'content.googleapis.com';
-
-final String _kApiRestOfUrl = '/youtube/v3/videos';
-
-final String _kApiQueryParts = 'contentDetails,snippet,statistics';
-
-/// Represents the state of data loading
-enum LoadingState {
-  /// Still fetching data
-  inProgress,
-  /// Data has completed loading
-  completed,
-  /// Data failed to load
-  failed,
-}
 
 /// [YoutubePlayer] is a [StatelessWidget]
 /// UI Widget that can "play" Youtube videos.
@@ -71,66 +52,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   /// Flag for whether the play-button overlay is showing on top of the video
   bool _showingPlayOverlay = true;
 
-
-  /// Loading State for video data (name, viewcount...)
-  LoadingState _videoDataLoadingState = LoadingState.inProgress;
-
   /// Track the current thumbnail that is being shown
   /// Youtube provides 4 thumbnails (0,1,2,3)
   int _thumbnailIndex = 0;
 
   /// Track the current timer showing the slideshow
   Timer _currentTimer;
-
-  /// Data for given video
-  VideoData _videoData;
-
-  @override
-  void initState() {
-    super.initState();
-    // Load up Video Metadata
-    _getVideoData().then((VideoData videoData) {
-      if(mounted) {
-        if(videoData == null) {
-          setState(() {
-            _videoDataLoadingState = LoadingState.failed;
-          });
-        } else {
-          setState(() {
-            _videoDataLoadingState = LoadingState.completed;
-            _videoData = videoData;
-          });
-        }
-      }
-    }).catchError((dynamic stuff) {
-      if(mounted) {
-        setState(() {
-          _videoDataLoadingState = LoadingState.failed;
-        });
-      }
-    });
-  }
-
-  Future<VideoData> _getVideoData() async {
-    Map<String, String> params = <String, String>{};
-    params['id'] = config.videoId;
-    params['key'] = config.apiKey;
-    params['part'] = _kApiQueryParts;
-
-    Uri uri = new Uri.https(_kApiBaseUrl, _kApiRestOfUrl, params);
-    http.Response response = await http.get(uri);
-    dynamic jsonData = JSON.decode(response.body);
-
-    if(response.statusCode != 200) {
-      return null;
-    }
-
-    if(jsonData['items'] is List<Map<String, dynamic>> && jsonData['items'].isNotEmpty) {
-      return new VideoData.fromJson(jsonData['items'][0]);
-    } else {
-      return null;
-    }
-  }
 
   /// Show the play-button overlay on top of the video
   /// The play overlay will auto-hide after 1 second if the video is currently
@@ -250,32 +177,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     );
   }
 
-  Widget _buildHeader() {
-    Widget header;
-    switch (_videoDataLoadingState) {
-      case LoadingState.inProgress:
-        header = new Container(
-          height: 50.0,
-          child: new Center(
-            child: new CircularProgressIndicator(
-              value: null,
-              valueColor: new AlwaysStoppedAnimation<Color>(Colors.grey[300]),
-            ),
-          ),
-        );
-        break;
-      case LoadingState.completed:
-        header = new YoutubeVideoHeader(videoData: _videoData);
-        break;
-      case LoadingState.failed:
-        header = new Container(
-          height: 50.0,
-          child: new Text('Content Failed to Load'),
-        );
-        break;
-    }
-    return header;
-  }
 
   @override
   void dispose() {
@@ -289,7 +190,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     return new Column(
       children: <Widget>[
         _buildPlayer(),
-        _buildHeader(),
+        new YoutubeVideoHeader(
+          videoId: config.videoId,
+          apiKey: config.apiKey,
+        )
       ],
     );
   }
