@@ -4,7 +4,6 @@
 
 /// Represents Video Data from a single Youtube video
 class VideoData {
-
   /// Title of video
   String title;
 
@@ -30,7 +29,7 @@ class VideoData {
   VideoData.fromJson(dynamic json) {
     title = json['snippet']['title'];
     description = json['snippet']['description'];
-    publishedAt =  DateTime.parse(json['snippet']['publishedAt']);
+    publishedAt = DateTime.parse(json['snippet']['publishedAt']);
     channelTitle = json['snippet']['channelTitle'];
     viewCount = int.parse(json['statistics']['viewCount']);
     likeCount = int.parse(json['statistics']['likeCount']);

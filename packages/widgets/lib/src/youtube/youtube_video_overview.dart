@@ -23,39 +23,39 @@ final String _kApiQueryParts = 'contentDetails,snippet,statistics';
 enum LoadingState {
   /// Still fetching data
   inProgress,
+
   /// Data has completed loading
   completed,
+
   /// Data failed to load
   failed,
 }
 
 /// UI Widget that loads and shows the basic information about a Youtube
 /// video such as: title, likes, channel title, description...
-class YoutubeVideoHeader extends StatefulWidget {
-
+class YoutubeVideoOverview extends StatefulWidget {
   /// ID for given youtube video
   final String videoId;
-
 
   /// Youtube API key needed to access the Youtube Public APIs
   final String apiKey;
 
   /// Constructor
-  YoutubeVideoHeader({
+  YoutubeVideoOverview({
     Key key,
     @required this.videoId,
     @required this.apiKey,
-  }) : super(key: key) {
+  })
+      : super(key: key) {
     assert(videoId != null);
     assert(apiKey != null);
   }
 
   @override
-  _YoutubeVideoHeaderState createState() => new _YoutubeVideoHeaderState();
+  _YoutubeVideoOverviewState createState() => new _YoutubeVideoOverviewState();
 }
 
-class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
-
+class _YoutubeVideoOverviewState extends State<YoutubeVideoOverview> {
   /// Data for given video
   VideoData _videoData;
 
@@ -72,25 +72,25 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
     http.Response response = await http.get(uri);
     dynamic jsonData = JSON.decode(response.body);
 
-    if(response.statusCode != 200) {
+    if (response.statusCode != 200) {
       return null;
     }
 
-    if(jsonData['items'] is List<Map<String, dynamic>> && jsonData['items'].isNotEmpty) {
+    if (jsonData['items'] is List<Map<String, dynamic>> &&
+        jsonData['items'].isNotEmpty) {
       return new VideoData.fromJson(jsonData['items'][0]);
     } else {
       return null;
     }
   }
 
-
   @override
   void initState() {
     super.initState();
     // Load up Video Metadata
     _getVideoData().then((VideoData videoData) {
-      if(mounted) {
-        if(videoData == null) {
+      if (mounted) {
+        if (videoData == null) {
           setState(() {
             _loadingState = LoadingState.failed;
           });
@@ -102,7 +102,7 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
         }
       }
     }).catchError((dynamic stuff) {
-      if(mounted) {
+      if (mounted) {
         setState(() {
           _loadingState = LoadingState.failed;
         });
@@ -115,7 +115,7 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         new Container(
-          padding: const EdgeInsets.only(right:4.0),
+          padding: const EdgeInsets.only(right: 4.0),
           child: new Icon(
             Icons.thumb_up,
             color: Colors.grey[500],
@@ -128,7 +128,7 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
         new Container(
           padding: const EdgeInsets.only(
             left: 16.0,
-            right:4.0,
+            right: 4.0,
           ),
           child: new Icon(
             Icons.thumb_down,
@@ -143,7 +143,7 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
     );
   }
 
-  Widget _buildPrimaryHeader() {
+  Widget _buildPrimaryTitle() {
     return new Container(
       padding: const EdgeInsets.all(16.0),
       decoration: new BoxDecoration(
@@ -169,7 +169,7 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
             padding: const EdgeInsets.symmetric(vertical: 12.0),
             child: new Text(
               '${new NumberFormat.decimalPattern().format(_videoData.viewCount)}'
-              ' views',
+                  ' views',
               style: new TextStyle(
                 color: Colors.grey[500],
               ),
@@ -182,7 +182,7 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
     );
   }
 
-  Widget _buildChannelHeader() {
+  Widget _buildChannelTitle() {
     return new Container(
       padding: const EdgeInsets.all(16.0),
       decoration: new BoxDecoration(
@@ -211,28 +211,26 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
             ],
           ),
           new FlatButton(
-            child: new Row(
-              children: <Widget>[
-                new Container(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: new Icon(
-                    Icons.ondemand_video,
-                    color: Colors.red[600],
-                    size: 20.0,
-                  ),
+            child: new Row(children: <Widget>[
+              new Container(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: new Icon(
+                  Icons.ondemand_video,
+                  color: Colors.red[600],
+                  size: 20.0,
                 ),
-                new Text(
-                  'SUBSCRIBE',
-                  style: new TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: Colors.red[600],
-                  ),
+              ),
+              new Text(
+                'SUBSCRIBE',
+                style: new TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: Colors.red[600],
                 ),
-              ]
-            ),
-            onPressed: (){}, //This is mock and face
+              ),
+            ]),
+            onPressed: () {}, //This is mock and face
           ),
-        ]
+        ],
       ),
     );
   }
@@ -256,8 +254,8 @@ class _YoutubeVideoHeaderState extends State<YoutubeVideoHeader> {
         header = new Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _buildPrimaryHeader(),
-            _buildChannelHeader(),
+            _buildPrimaryTitle(),
+            _buildChannelTitle(),
           ],
         );
         break;

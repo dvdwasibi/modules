@@ -11,7 +11,8 @@ class YoutubePlayerScreen extends StatelessWidget {
   YoutubePlayerScreen({
     Key key,
     this.apiKey,
-  }) : super(key: key);
+  })
+      : super(key: key);
 
   /// Youtube API key
   final String apiKey;

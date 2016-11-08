@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
-import 'youtube_video_header.dart';
+import 'youtube_video_overview.dart';
 
 /// Duration between switching thumbnails to fake video playing effect
 final Duration _kSlideDuration = const Duration(milliseconds: 300);
@@ -177,7 +177,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     );
   }
 
-
   @override
   void dispose() {
     super.dispose();
@@ -186,11 +185,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
-
     return new Column(
       children: <Widget>[
         _buildPlayer(),
-        new YoutubeVideoHeader(
+        new YoutubeVideoOverview(
           videoId: config.videoId,
           apiKey: config.apiKey,
         )
