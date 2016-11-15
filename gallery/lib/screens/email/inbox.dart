@@ -95,6 +95,16 @@ class EmailInboxScreen extends StoreWatcher {
       threadListItems.add(_createThreadListItem(context, t));
     });
 
+    if (style == InboxStyle.gridView) {
+      return new Block(
+        children: <Widget>[
+          new ThreadGridLayout(
+            children: threadListItems,
+          ),
+        ],
+      );
+    }
+
     return new Block(children: threadListItems);
   }
 }
