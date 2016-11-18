@@ -14,6 +14,33 @@ const String _kAlbumBaseUrl = '/v1/albums/';
 /// Client to retrieve data for Music
 class MusicClient {
 
+  /// Retrieves given artist based on id
+  static Future<Artist> getArtistById(String id) async {
+    Uri uri = new Uri.https(_kApiBaseUrl, '/v1/artists/$id');
+    http.Response response = await http.get(uri);
+    if (response.statusCode != 200) {
+      return null;
+    }
+    return new Artist.fromFullJson(JSON.decode(response.body));
+  }
+
+  /// Retieves related artists for given artist id
+  static Future<List<Artist>> getRelatedArtists(String id) async {
+    Uri uri = new Uri.https(_kApiBaseUrl, '/v1/artists/$id');
+    http.Response response = await http.get(uri);
+    if (response.statusCode != 200) {
+      return null;
+    }
+    dynamic jsonData = JSON.decode(response.body);
+    List<Artist> artists = <Artist>[];
+    if(jsonData['items'] is List<dynamic>) {
+      jsonData['items'].forEach((dynamic albumJson) {
+        artists.add(new Artist.fromSimplifiedJson(albumJson));
+      });
+    }
+    return artists;
+  }
+
   /// Retrieves the given album based on id
   static Future<Album> getAlbumById(String id) async {
     Uri uri = new Uri.https(_kApiBaseUrl, _kAlbumBaseUrl + id);
@@ -21,7 +48,24 @@ class MusicClient {
     if (response.statusCode != 200) {
       return null;
     }
-    dynamic jsonData = JSON.decode(response.body);
-    return new Album.fromFullJson(jsonData);
+    return new Album.fromFullJson(JSON.decode(response.body));
   }
+
+  /// Retreives albums for given artist id
+  static Future<List<Album>> getAlbumsForArtist(String id) async {
+    Uri uri = new Uri.https(_kApiBaseUrl, '/v1/artists/$id/albums ');
+    http.Response response = await http.get(uri);
+    if (response.statusCode != 200) {
+      return null;
+    }
+    dynamic jsonData = JSON.decode(response.body);
+    List<Album> albums = <Album>[];
+    if(jsonData['items'] is List<dynamic>) {
+      jsonData['items'].forEach((dynamic albumJson) {
+        albums.add(new Album.fromSimplifiedJson(albumJson));
+      });
+    }
+    return albums;
+  }
+
 }
