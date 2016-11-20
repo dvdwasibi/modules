@@ -29,7 +29,10 @@ class EmailQuarterbackModule extends StoreWatcher {
     // The container below should ideally be a ChildView.
     Widget menu = new Container(
       constraints: new BoxConstraints.loose(new Size.fromWidth(280.0)),
-      child: new EmailMenuScreen(),
+      child: new EmailMenuScreen(
+        emailSessionStoreToken: kEmailSessionStoreToken,
+        onSelectFolder: emailSessionFocusFolder.call,
+      ),
     );
 
     Widget inbox = new Container(

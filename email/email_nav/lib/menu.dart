@@ -2,110 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:email_session/email_session_store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_flux/flutter_flux.dart';
 import 'package:models/email.dart';
 import 'package:models/user.dart';
 import 'package:widgets/email.dart';
 
-/// This screen displays an inbox.
-class EmailMenuScreen extends StatefulWidget {
-  /// Creates a [EmailMenuScreen] instance.
-  EmailMenuScreen({Key key}) : super(key: key);
+/// An email menu/folder screen that shows a list of folders, built with the
+/// flux pattern.
+class EmailMenuScreen extends StoreWatcher {
+  /// Creates a new [EmailMenuScreen] instance
+  EmailMenuScreen({
+    Key key,
+    this.emailSessionStoreToken,
+    this.onSelectFolder,
+  })
+      : super(key: key) {
+    assert(emailSessionStoreToken != null);
+  }
+
+  /// Token for the email session store
+  final StoreToken emailSessionStoreToken;
+
+  /// Callback for when a folder is selected
+  final FolderActionCallback onSelectFolder;
 
   @override
-  _EmailMenuScreenState createState() => new _EmailMenuScreenState();
-}
-
-class _EmailMenuScreenState extends State<EmailMenuScreen> {
-  List<FolderGroup> _folderGroups;
-  Folder _selectFolder;
-  User _user;
+  void initStores(ListenToStore listenToStore) {
+    listenToStore(emailSessionStoreToken);
+  }
 
   @override
-  void initState() {
-    _folderGroups = <FolderGroup>[
-      new FolderGroup(
-        folders: <Folder>[
-          new Folder(
-            id: 'INBOX',
-            name: 'Inbox',
-            unread: 10,
-            type: 'system',
-          ),
-          new Folder(
-            id: 'STARRED',
-            name: 'Starred',
-            unread: 5,
-            type: 'system',
-          ),
-          new Folder(
-            id: 'DRAFT',
-            name: 'Starred',
-            unread: 0,
-            type: 'system',
-          ),
-          new Folder(
-            id: 'TRASH',
-            name: 'Trash',
-            unread: 0,
-            type: 'system',
-          ),
-        ],
-      ),
-      new FolderGroup(
-        name: 'Work Folders',
-        folders: <Folder>[
-          new Folder(
-            id: 'TODO',
-            name: 'Todo',
-            unread: 2,
-            type: 'user',
-          ),
-          new Folder(
-            id: 'COMPLETED',
-            name: 'Completed',
-            unread: 2,
-            type: 'user',
-          ),
-          new Folder(
-            id: 'JIRA',
-            name: 'Jira',
-            unread: 0,
-            type: 'user',
-          ),
-          new Folder(
-            id: 'GERRIT',
-            name: 'Gerrit',
-            unread: 0,
-            type: 'user',
-          ),
-        ],
-      ),
-    ];
-    _user = new User(
-      name: 'Coco Yang',
-      email: 'littlePuppyCoco@puppy.cute',
-      picture:
-          'https://raw.githubusercontent.com/dvdwasibi/DogsOfFuchsia/master/coco.jpg',
+  Widget build(BuildContext context, Map<StoreToken, Store> stores) {
+    final EmailSessionStore emailSession = stores[emailSessionStoreToken];
+
+    if (emailSession.fetching) {
+      return new Center(child: new CircularProgressIndicator());
+    }
+
+    if (emailSession.currentErrors.isNotEmpty) {
+      Error error = emailSession.currentErrors[0];
+      return new Text('Error occurred while retrieving email folders: '
+          '$error');
+    }
+
+    FolderGroup primaryFolders = new FolderGroup(
+      folders: emailSession.visibleFolders,
     );
-    super.initState();
-  }
 
-  void _handleSelectFolder(Folder folder) {
-    setState(() {
-      _selectFolder = folder;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return new Center(
-      child: new InboxMenu(
-        folderGroups: _folderGroups,
-        onSelectFolder: _handleSelectFolder,
-        selectedFolder: _selectFolder,
-        user: _user,
-      ),
+    return new InboxMenu(
+      folderGroups: <FolderGroup>[primaryFolders],
+      onSelectFolder: onSelectFolder,
+      selectedFolder: emailSession.focusedFolder,
+      user: emailSession.user,
     );
   }
 }

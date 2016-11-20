@@ -13,10 +13,6 @@ import 'package:googleapis/gmail/v1.dart' as gapi;
 import 'package:models/email.dart';
 import 'package:models/user.dart';
 
-
-final Action<Folder> _emailSessionFocusFolder = new Action<Folder>();
-final Action<Thread> _emailSessionFocusThread = new Action<Thread>();
-
 class EmailSessionStoreDirect extends Store implements EmailSessionStore {
   api.GmailApi _gmail;
   User _user;
@@ -34,10 +30,11 @@ class EmailSessionStoreDirect extends Store implements EmailSessionStore {
     _focusedThreadId = null;
     _currentErrors = new List<Error>.unmodifiable(<Error>[]);
     _fetching = true;
-    triggerOnAction(_emailSessionFocusFolder, (Folder folder) {
+    triggerOnAction(emailSessionFocusFolder, (Folder folder) {
       _focusedLabelId = folder.id;
+      _fetchThreadsForFocusedLabel();
     });
-    triggerOnAction(_emailSessionFocusThread, (Thread thread) {
+    triggerOnAction(emailSessionFocusThread, (Thread thread) {
       _focusedThreadId = thread.id;
     });
   }
@@ -74,6 +71,22 @@ class EmailSessionStoreDirect extends Store implements EmailSessionStore {
     return _fetching;
   }
 
+  /// Retrieve threads currently focused label/folder and replace store with
+  /// those threads
+  Future<Null> _fetchThreadsForFocusedLabel() async {
+    if (_gmail == null) {
+      return null;
+    }
+
+    gapi.ListThreadsResponse response = await _gmail.users.threads
+        .list('me', labelIds: [_focusedLabelId], maxResults: 15);
+    List<gapi.Thread> fullThreads = await Future.wait(response.threads
+        .map((gapi.Thread t) => _gmail.users.threads.get('me', t.id)));
+    _visibleThreads = new List<Thread>.unmodifiable(
+        fullThreads.map((gapi.Thread t) => new Thread.fromGmailApi(t)));
+    trigger();
+  }
+
   Future<Null> fetchInitialContentWithGmailApi() async {
     _gmail =
         await rootBundle.loadString('assets/config.json').then((String data) {
@@ -93,14 +106,14 @@ class EmailSessionStoreDirect extends Store implements EmailSessionStore {
     if (_gmail == null) {
       return null;
     }
-    gapi.ListThreadsResponse response = await _gmail.users.threads
-        .list('me', labelIds: ['INBOX'], maxResults: 15);
-    List<gapi.Thread> fullThreads = await Future.wait(response.threads
-        .map((gapi.Thread t) => _gmail.users.threads.get('me', t.id)));
-    _visibleThreads = new List<Thread>.unmodifiable(
-        fullThreads.map((gapi.Thread t) => new Thread.fromGmailApi(t)));
 
-    /// Get Folder Data
+    // Set 'INBOX' as the default focused label
+    _focusedLabelId = 'INBOX';
+
+    // Fetch Threads
+    await _fetchThreadsForFocusedLabel();
+
+    // Get Folder Data
     List<String> foldersWeCareAbout = <String>[
       'INBOX',
       'STARRED',
@@ -111,6 +124,13 @@ class EmailSessionStoreDirect extends Store implements EmailSessionStore {
         .map((String folderName) => _gmail.users.labels.get('me', folderName)));
     _visibleLabels = new List<Folder>.unmodifiable(
         fullLabels.map((gapi.Label label) => new Folder.fromGmailApi(label)));
+
+    // Get User Data
+    gapi.Profile userProfile = await _gmail.users.getProfile('me');
+    _user = new User(
+      name: userProfile.emailAddress,
+      email: userProfile.emailAddress,
+    );
 
     _fetching = false;
     trigger();
