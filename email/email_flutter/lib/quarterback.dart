@@ -9,7 +9,6 @@ import 'package:email_thread/thread.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart';
 import 'package:models/email.dart';
-
 import 'package:widgets/shopping.dart';
 
 /// A screen demonstrating what the email quarterback module should look like.
