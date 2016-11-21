@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
 
-enum PixelColor{
+enum _PixelColor{
   black,
   silver,
   blue,
+}
+
+enum _StorageSize{
+  s32,
+  s128,
 }
 
 class InteractiveReceipt extends StatefulWidget {
@@ -30,9 +34,9 @@ class _InteractiveReceiptState extends State<InteractiveReceipt> with TickerProv
 
   bool _editMode = false;
 
-  String _storageSize = '32 GB';
+  _StorageSize _storageSize = _StorageSize.s32;
 
-  PixelColor _selectedPixelColor = PixelColor.silver;
+  _PixelColor _selectedPixelColor = _PixelColor.silver;
 
   @override
   void initState() {
@@ -59,43 +63,53 @@ class _InteractiveReceiptState extends State<InteractiveReceipt> with TickerProv
     ).animate(animation);
   }
 
+  String get storageSizeText {
+    switch(_storageSize) {
+      case _StorageSize.s32:
+        return '32 GB';
+      case _StorageSize.s128:
+        return '128 GB';
+    }
+  }
+
   String get price {
-    if(_storageSize == '32 GB') {
-      return '\$769.00';
-    } else {
-      return '\$869.00';
+    switch(_storageSize) {
+      case _StorageSize.s32:
+        return '\$769.00';
+      case _StorageSize.s128:
+        return '\$869.00';
     }
   }
 
   String get imageUrl {
     switch(_selectedPixelColor) {
-      case PixelColor.black:
+      case _PixelColor.black:
         return 'https://lh3.googleusercontent.com/WiZ9IdoWExc2vUdR5Oom31lK3BNHeaZ8SRFLgSUl2ObTYineH7LPKLM5NbHaAGXZt0qf';
-      case PixelColor.silver:
+      case _PixelColor.silver:
         return 'https://lh3.googleusercontent.com/JKkKltrLkFnpNirTEjb8yA5bui0Hv7mPocx8T5Gu6qUiYrlnt1Jcx7ITH9pobnejSp9u';
-      case PixelColor.blue:
+      case _PixelColor.blue:
         return 'https://lh3.googleusercontent.com/7cco-0fPUfmv0D0Rk0dCDYYv1QjzncyGEhxN5zFUHKWoIKuxgvrOwAFbAyRkKxLvv6pV';
     }
   }
 
   String get _colorText{
     switch(_selectedPixelColor) {
-      case PixelColor.black:
+      case _PixelColor.black:
         return 'Quite Black';
-      case PixelColor.silver:
+      case _PixelColor.silver:
         return 'Very Silver';
-      case PixelColor.blue:
+      case _PixelColor.blue:
         return 'Really Blue';
     }
   }
 
-  Color _getColorFromPixelColor(PixelColor pixelColor) {
+  Color _getColorFromPixelColor(_PixelColor pixelColor) {
     switch(pixelColor) {
-      case PixelColor.blue:
+      case _PixelColor.blue:
         return Colors.blue[600];
-      case PixelColor.silver:
+      case _PixelColor.silver:
         return Colors.white;
-      case PixelColor.black:
+      case _PixelColor.black:
         return Colors.black;
     }
   }
@@ -120,7 +134,7 @@ class _InteractiveReceiptState extends State<InteractiveReceipt> with TickerProv
     );
   }
 
-  Widget _buildColorOption(PixelColor pixelColor) {
+  Widget _buildColorOption(_PixelColor pixelColor) {
     return new Container(
       margin: const EdgeInsets.symmetric(horizontal: 4.0),
       decoration: new BoxDecoration(
@@ -154,25 +168,34 @@ class _InteractiveReceiptState extends State<InteractiveReceipt> with TickerProv
             children: <Widget>[
               new Row(
                 children: <Widget>[
-                  _buildColorOption(PixelColor.black),
-                  _buildColorOption(PixelColor.blue),
-                  _buildColorOption(PixelColor.silver),
+                  _buildColorOption(_PixelColor.black),
+                  _buildColorOption(_PixelColor.blue),
+                  _buildColorOption(_PixelColor.silver),
                 ],
               ),
               new Container(
                 margin: const EdgeInsets.only(left: 4.0),
-                child: new DropdownButton<String>(
+                child: new DropdownButton<_StorageSize>(
                   value: _storageSize,
-                  onChanged: (String newValue) {
+                  onChanged: (_StorageSize newSize) {
                     setState(() {
-                      if (newValue != null)
-                        _storageSize = newValue;
+                      if (newSize != null)
+                        _storageSize = newSize;
                     });
                   },
-                  items: <String>['32 GB', '128 GB'].map((String value) {
-                    return new DropdownMenuItem<String>(
+                  items: <_StorageSize>[_StorageSize.s32,_StorageSize.s128].map((_StorageSize value) {
+                    String text;
+                    switch(value) {
+                      case _StorageSize.s32:
+                        text = '32 GB';
+                        break;
+                      case _StorageSize.s128:
+                        text = '128 GB';
+                        break;
+                    };
+                    return new DropdownMenuItem<_StorageSize>(
                       value: value,
-                      child: new Text(value),
+                      child: new Text(text),
                     );
                   }).toList(),
                 ),
@@ -201,7 +224,7 @@ class _InteractiveReceiptState extends State<InteractiveReceipt> with TickerProv
         return new Flexible(
           flex: 1,
           child: new Text(
-            '$_storageSize / $_colorText',
+            '$storageSizeText / $_colorText',
           ),
         );
       }
