@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_flux/flutter_flux.dart';
 import 'package:models/email.dart';
 
+import 'package:widgets/shopping.dart';
+
 /// A screen demonstrating what the email quarterback module should look like.
 ///
 /// This screen has three columns as a typical email client in landscape mode:
@@ -56,15 +58,16 @@ class EmailQuarterbackModule extends StoreWatcher {
     Widget thread = new Flexible(
       flex: 1,
       // The container below should ideally be a ChildView.
-      child: new Container(
-        child: emailSession.focusedThread != null
-            ? new EmailThreadScreen(
-                emailSessionStoreToken: kEmailSessionStoreToken,
-                threadId: emailSession.focusedThread.id,
-                onThreadClose: (_) {},
-              )
-            : null,
-      ),
+      // child: new Container(
+      //   child: emailSession.focusedThread != null
+      //       ? new EmailThreadScreen(
+      //           emailSessionStoreToken: kEmailSessionStoreToken,
+      //           threadId: emailSession.focusedThread.id,
+      //           onThreadClose: (_) {},
+      //         )
+      //       : null,
+      // ),
+      child: new InteractiveReceipt(),
     );
 
     List<Widget> columns = <Widget>[menu, inbox, thread];
