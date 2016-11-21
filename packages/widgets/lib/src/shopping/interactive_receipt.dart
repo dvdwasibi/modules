@@ -225,6 +225,8 @@ class _InteractiveReceiptState extends State<InteractiveReceipt> with TickerProv
           flex: 1,
           child: new Text(
             '$storageSizeText / $_colorText',
+            softWrap: false,
+            overflow: TextOverflow.fade,
           ),
         );
       }
